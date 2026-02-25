@@ -8,14 +8,16 @@ let chartCategories = null;
 let chartMensuel = null;
 let chartSolde = null;
 
-const MOIS_NOMS = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
+const MOIS_NOMS = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Décembre'];
 const CAT_LABELS = {
-  alimentation:'Alimentation', logement:'Logement', transport:'Transport',
-  loisirs:'Loisirs', sante:'Sante', salaire:'Salaire / Revenus', autre:'Autre'
+  alimentation:'Alimentation', vetements:'Vêtements', cadeaux:'Cadeaux', essence:'Essence',
+  logement:'Logement', transport:'Transport', loisirs:'Loisirs', sante:'Sante',
+  salaire:'Salaire / Revenus', autre:'Autre'
 };
 const CAT_COLORS = {
-  alimentation:'#ff9800', logement:'#2196f3', transport:'#9c27b0',
-  loisirs:'#e91e63', sante:'#f44336', salaire:'#4caf50', autre:'#9e9e9e'
+  alimentation:'#ff9800', vetements:'#795548', cadeaux:'#ffeb3b', essence:'#607d8b',
+  logement:'#2196f3', transport:'#9c27b0', loisirs:'#e91e63', sante:'#f44336',
+  salaire:'#4caf50', autre:'#9e9e9e'
 };
 
 // ========================
@@ -135,7 +137,6 @@ function initGraphiques() {
     fS.innerHTML += `<option value="${m}" ${m===vS?'selected':''}>${MOIS_NOMS[parseInt(mn)-1]} ${a}</option>`;
   });
 
-  // 1. Camembert Categories
   let dataCat = ops;
   if (filtreMois) dataCat = dataCat.filter(o => o.date.startsWith(filtreMois));
   dataCat = dataCat.filter(o => o.type === 'depense');
@@ -151,7 +152,6 @@ function initGraphiques() {
     }
   });
 
-  // 2. Barres Mensuel
   const mensuel = {};
   ops.forEach(o => {
     const m = o.date.slice(0,7);
@@ -166,13 +166,12 @@ function initGraphiques() {
     data: {
       labels: labelsM.map(l => { const [a,mn]=l.split('-'); return MOIS_NOMS[parseInt(mn)-1].slice(0,3); }),
       datasets: [
-        { label:'Entrees', data:labelsM.map(l => mensuel[l].ent), backgroundColor:'#4caf50' },
-        { label:'Depenses', data:labelsM.map(l => mensuel[l].dep), backgroundColor:'#f44336' }
+        { label:'Entrées', data:labelsM.map(l => mensuel[l].ent), backgroundColor:'#4caf50' },
+        { label:'Dépenses', data:labelsM.map(l => mensuel[l].dep), backgroundColor:'#f44336' }
       ]
     }
   });
 
-  // 3. Courbe Solde
   if (chartSolde) chartSolde.destroy();
   if (filtreSoldeMois) {
     const dataSolde = ops.filter(o => o.date.startsWith(filtreSoldeMois)).sort((a,b)=>a.date.localeCompare(b.date));
@@ -229,7 +228,7 @@ btnOcr.addEventListener('click', async () => {
     const { data:{text} } = await w.recognize(img); await w.terminate();
     document.getElementById('ocr-text').value=text;
     document.getElementById('date').value=new Date().toISOString().split('T')[0];
-    s.textContent='Termine.'; document.getElementById('screen-scan').classList.add('hidden'); document.getElementById('screen-validate').classList.remove('hidden');
+    s.textContent='Terminé.'; document.getElementById('screen-scan').classList.add('hidden'); document.getElementById('screen-validate').classList.remove('hidden');
   } catch(e) { s.textContent='Erreur.'; btnOcr.disabled=false; }
 });
 
