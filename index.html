@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#1976d2" />
   <!-- Bibliothèques nécessaires -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.js"></script>
   <style>
     * { box-sizing: border-box; }
     body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
@@ -51,7 +51,7 @@
     .badge-depense { background: #ffebee; color: #d32f2f; }
     .badge-entree { background: #e8f5e9; color: #388e3c; }
     .btn-suppr { background: none; border: none; color: #d32f2f; cursor: pointer; font-size: 16px; }
-    .canvas-wrap { margin-top: 16px; }
+    .canvas-wrap { margin-top: 24px; position: relative; height: 300px; width: 100%; }
   </style>
 </head>
 <body>
@@ -73,22 +73,18 @@
       <button class="btn secondary" id="btn-ocr" disabled>Lancer la lecture du ticket (OCR)</button>
       <div class="progress" id="ocr-status"></div>
     </section>
-
     <section class="card hidden" id="screen-validate">
       <h2>Valider la dépense</h2>
       <label>Texte brut du ticket</label>
       <textarea id="ocr-text" readonly></textarea>
-      
-      <label>Type d'opération</label>
       <div class="type-toggle">
         <button id="type-depense-ocr" class="selected-depense" onclick="setType('ocr', 'depense')">Dépense</button>
-        <button id="type-entree-ocr" onclick="setType('ocr', 'entree')">Entrée d'argent</button>
+        <button id="type-entree-ocr" onclick="setType('ocr', 'entree')">Entrée</button>
       </div>
-
       <label>Montant (€)</label>
-      <input type="number" step="0.01" id="amount" placeholder="Ex : 24.50">
+      <input type="number" step="0.01" id="amount" placeholder="Ex : 24.50" />
       <label>Date</label>
-      <input type="date" id="date">
+      <input type="date" id="date" />
       <label>Catégorie</label>
       <select id="category">
         <option value="alimentation">Alimentation</option>
@@ -103,23 +99,20 @@
         <option value="autre">Autre</option>
       </select>
       <label>Commentaire</label>
-      <input type="text" id="comment" placeholder="Ex : Courses Carrefour">
-      
+      <input type="text" id="comment" placeholder="Ex : Courses Carrefour" />
       <button class="btn success" id="btn-save">Enregistrer</button>
       <button class="btn secondary" onclick="showTab('scan')">Annuler</button>
     </section>
-
     <section class="card hidden" id="screen-manuel">
       <h2>Saisie manuelle</h2>
-      <label>Type d'opération</label>
       <div class="type-toggle">
-        <button id="type-depense-m" class="selected-depense" onclick="setType('manuel', 'depense')">Dépense</button>
-        <button id="type-entree-m" onclick="setType('manuel', 'entree')">Entrée d'argent</button>
+        <button id="type-depense-m" class="selected-depense" onclick="setType('m', 'depense')">Dépense</button>
+        <button id="type-entree-m" onclick="setType('m', 'entree')">Entrée</button>
       </div>
       <label>Montant (€)</label>
-      <input type="number" step="0.01" id="m-amount" placeholder="Ex : 50.00">
+      <input type="number" step="0.01" id="m-amount" placeholder="Ex : 50.00" />
       <label>Date</label>
-      <input type="date" id="m-date">
+      <input type="date" id="m-date" />
       <label>Catégorie</label>
       <select id="m-category">
         <option value="alimentation">Alimentation</option>
@@ -134,10 +127,9 @@
         <option value="autre">Autre</option>
       </select>
       <label>Commentaire</label>
-      <input type="text" id="m-comment" placeholder="Ex : Loyer, Virement...">
+      <input type="text" id="m-comment" placeholder="Ex : Loyer, Virement..." />
       <button class="btn success" id="btn-save-manuel">Enregistrer</button>
     </section>
-
     <section class="card hidden" id="screen-historique">
       <h2>Historique</h2>
       <div class="totaux">
@@ -156,16 +148,10 @@
       </div>
       <div class="filtre-row">
         <select id="filtre-mois"><option value="">Tous les mois</option></select>
-        <select id="filtre-categorie">
-          <option value="">Toutes catégories</option>
-          <option value="alimentation">Alimentation</option>
-          <option value="vetements">Vêtements</option>
-          <!-- ... etc ... -->
-        </select>
+        <select id="filtre-categorie"><option value="">Toutes catégories</option></select>
       </div>
       <div id="historique-container"></div>
     </section>
-
     <section class="card hidden" id="screen-graphiques">
       <h2>Graphiques</h2>
       <div class="canvas-wrap">
@@ -174,12 +160,8 @@
       <div class="canvas-wrap">
         <canvas id="chart-mensuel"></canvas>
       </div>
-      <div class="canvas-wrap">
-        <canvas id="chart-solde"></canvas>
-      </div>
     </section>
   </main>
-
   <script src="main.js"></script>
 </body>
 </html>
