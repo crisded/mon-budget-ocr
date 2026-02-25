@@ -12,7 +12,7 @@
     header { background: #1976d2; color: white; padding: 0; text-align: center; }
     header h1 { margin: 0; padding: 14px 16px; font-size: 18px; }
     nav { display: flex; background: #1565c0; }
-    nav button { flex: 1; padding: 10px 2px; background: none; border: none; color: rgba(255,255,255,0.7); font-size: 12px; cursor: pointer; border-bottom: 3px solid transparent; }
+    nav button { flex: 1; padding: 10px 2px; background: none; border: none; color: rgba(255,255,255,0.7); font-size: 11px; cursor: pointer; border-bottom: 3px solid transparent; }
     nav button.active { color: white; border-bottom: 3px solid white; font-weight: bold; }
     main { padding: 16px; }
     .card { background: white; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 16px; }
@@ -22,7 +22,6 @@
     .primary { background: #1976d2; color: white; }
     .secondary { background: #e0e0e0; color: #333; }
     .success { background: #388e3c; color: white; }
-    .danger { background: #d32f2f; color: white; }
     button.btn:disabled { background: #bdbdbd; color: #eee; cursor: default; }
     .help { font-size: 13px; color: #666; margin-top: 8px; }
     .hidden { display: none; }
@@ -35,20 +34,15 @@
     .type-toggle button.selected-depense { border-color: #d32f2f; background: #ffebee; color: #d32f2f; font-weight: bold; }
     .type-toggle button.selected-entree { border-color: #388e3c; background: #e8f5e9; color: #388e3c; font-weight: bold; }
     h2 { margin-top: 0; font-size: 17px; }
-    /* Totaux */
     .totaux { display: flex; gap: 8px; margin-bottom: 12px; }
     .total-box { flex: 1; border-radius: 8px; padding: 10px; text-align: center; }
     .total-box .label { font-size: 11px; color: #666; margin-bottom: 4px; }
     .total-box .valeur { font-size: 16px; font-weight: bold; }
-    .box-depense { background: #ffebee; }
-    .box-depense .valeur { color: #d32f2f; }
-    .box-entree { background: #e8f5e9; }
-    .box-entree .valeur { color: #388e3c; }
-    .box-solde { background: #e3f2fd; }
-    .box-solde .valeur { color: #1976d2; }
-    /* Tableau historique */
+    .box-depense { background: #ffebee; } .box-depense .valeur { color: #d32f2f; }
+    .box-entree { background: #e8f5e9; } .box-entree .valeur { color: #388e3c; }
+    .box-solde { background: #e3f2fd; } .box-solde .valeur { color: #1976d2; }
     .filtre-row { display: flex; gap: 8px; margin-bottom: 12px; }
-    .filtre-row select { margin-top: 0; }
+    .filtre-row select { margin-top: 0; flex: 1; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     th { background: #1976d2; color: white; padding: 8px 6px; text-align: left; }
     td { padding: 8px 6px; border-bottom: 1px solid #eee; vertical-align: top; }
@@ -58,21 +52,27 @@
     .badge-entree { background: #e8f5e9; color: #388e3c; }
     .btn-suppr { background: none; border: none; color: #d32f2f; cursor: pointer; font-size: 16px; padding: 0; width: auto; margin-top: 0; }
     .empty-msg { text-align: center; color: #999; padding: 24px; }
-    .filtre-row select { flex: 1; }
+    /* Graphiques */
+    .graph-title { font-size: 15px; font-weight: bold; color: #333; margin-bottom: 10px; }
+    .canvas-wrap { position: relative; width: 100%; }
+    canvas { width: 100% !important; }
+    .graph-filtre { margin-bottom: 12px; }
+    .graph-filtre select { margin-top: 0; }
   </style>
 </head>
 <body>
   <header>
     <h1>Mon Budget OCR</h1>
     <nav>
-      <button class="active" id="nav-scan" onclick="showTab('scan')">Scanner ticket</button>
-      <button id="nav-manuel" onclick="showTab('manuel')">Saisie manuelle</button>
+      <button class="active" id="nav-scan" onclick="showTab('scan')">Scanner</button>
+      <button id="nav-manuel" onclick="showTab('manuel')">Saisie</button>
       <button id="nav-historique" onclick="showTab('historique')">Historique</button>
+      <button id="nav-graphiques" onclick="showTab('graphiques')">Graphiques</button>
     </nav>
   </header>
   <main>
 
-    <!-- ECRAN 1 : Scanner un ticket -->
+    <!-- ECRAN 1 : Scanner -->
     <section class="card" id="screen-scan">
       <h2>Scanner un ticket</h2>
       <div class="preview" id="preview"><span>Aucune image selectionnee</span></div>
@@ -80,10 +80,10 @@
       <button class="btn primary" id="btn-choose">Prendre / choisir une photo</button>
       <button class="btn secondary" id="btn-ocr" disabled>Lancer la lecture du ticket (OCR)</button>
       <div class="progress" id="ocr-status"></div>
-      <p class="help">1. Prends la photo du ticket. 2. Appuie sur "Lancer la lecture" pour extraire le texte.</p>
+      <p class="help">1. Prends la photo du ticket. 2. Appuie sur "Lancer la lecture".</p>
     </section>
 
-    <!-- ECRAN 2 : Valider apres OCR -->
+    <!-- ECRAN 2 : Valider OCR -->
     <section class="card hidden" id="screen-validate">
       <h2>Valider la depense</h2>
       <label>Texte brut du ticket</label>
@@ -108,7 +108,7 @@
         <option value="autre">Autre</option>
       </select>
       <label>Commentaire</label>
-      <input type="text" id="comment" placeholder="Ex : Courses Carrefour, SNCF Montpellier-Paris" />
+      <input type="text" id="comment" placeholder="Ex : Courses Carrefour" />
       <button class="btn primary" id="btn-save">Enregistrer</button>
       <button class="btn secondary" id="btn-back">Revenir au scan</button>
     </section>
@@ -143,18 +143,9 @@
     <!-- ECRAN 4 : Historique -->
     <section class="hidden" id="screen-historique">
       <div class="totaux">
-        <div class="total-box box-depense">
-          <div class="label">Depenses</div>
-          <div class="valeur" id="total-depenses">0.00 euro</div>
-        </div>
-        <div class="total-box box-entree">
-          <div class="label">Entrees</div>
-          <div class="valeur" id="total-entrees">0.00 euro</div>
-        </div>
-        <div class="total-box box-solde">
-          <div class="label">Solde</div>
-          <div class="valeur" id="total-solde">0.00 euro</div>
-        </div>
+        <div class="total-box box-depense"><div class="label">Depenses</div><div class="valeur" id="total-depenses">0.00 euro</div></div>
+        <div class="total-box box-entree"><div class="label">Entrees</div><div class="valeur" id="total-entrees">0.00 euro</div></div>
+        <div class="total-box box-solde"><div class="label">Solde</div><div class="valeur" id="total-solde">0.00 euro</div></div>
       </div>
       <div class="card">
         <div class="filtre-row">
@@ -174,7 +165,36 @@
       </div>
     </section>
 
+    <!-- ECRAN 5 : Graphiques -->
+    <section class="hidden" id="screen-graphiques">
+
+      <div class="card">
+        <div class="graph-filtre">
+          <label style="margin-top:0">Periode</label>
+          <select id="graph-filtre-mois"><option value="">Tous les mois</option></select>
+        </div>
+        <div class="graph-title">Depenses par categorie</div>
+        <div class="canvas-wrap"><canvas id="chart-categories"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="graph-title">Evolution depenses / entrees par mois</div>
+        <div class="canvas-wrap"><canvas id="chart-mensuel"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="graph-title">Solde cumule au fil des jours</div>
+        <div class="graph-filtre">
+          <select id="graph-filtre-solde"><option value="">Choisir un mois...</option></select>
+        </div>
+        <div class="canvas-wrap"><canvas id="chart-solde"></canvas></div>
+      </div>
+
+    </section>
+
   </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="main.js"></script>
 </body>
