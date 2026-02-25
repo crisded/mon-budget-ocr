@@ -52,7 +52,6 @@
     .badge-entree { background: #e8f5e9; color: #388e3c; }
     .btn-suppr { background: none; border: none; color: #d32f2f; cursor: pointer; font-size: 16px; padding: 0; width: auto; margin-top: 0; }
     .empty-msg { text-align: center; color: #999; padding: 24px; }
-    /* Graphiques */
     .graph-title { font-size: 15px; font-weight: bold; color: #333; margin-bottom: 10px; }
     .canvas-wrap { position: relative; width: 100%; }
     canvas { width: 100% !important; }
@@ -72,7 +71,6 @@
   </header>
   <main>
 
-    <!-- ECRAN 1 : Scanner -->
     <section class="card" id="screen-scan">
       <h2>Scanner un ticket</h2>
       <div class="preview" id="preview"><span>Aucune image selectionnee</span></div>
@@ -83,7 +81,6 @@
       <p class="help">1. Prends la photo du ticket. 2. Appuie sur "Lancer la lecture".</p>
     </section>
 
-    <!-- ECRAN 2 : Valider OCR -->
     <section class="card hidden" id="screen-validate">
       <h2>Valider la depense</h2>
       <label>Texte brut du ticket</label>
@@ -100,6 +97,9 @@
       <label>Categorie</label>
       <select id="category">
         <option value="alimentation">Alimentation</option>
+        <option value="vetements">Vêtements</option>
+        <option value="cadeaux">Cadeaux</option>
+        <option value="essence">Essence</option>
         <option value="logement">Logement</option>
         <option value="transport">Transport</option>
         <option value="loisirs">Loisirs</option>
@@ -113,7 +113,6 @@
       <button class="btn secondary" id="btn-back">Revenir au scan</button>
     </section>
 
-    <!-- ECRAN 3 : Saisie manuelle -->
     <section class="card hidden" id="screen-manuel">
       <h2>Saisie manuelle</h2>
       <label>Type d'operation</label>
@@ -128,6 +127,9 @@
       <label>Categorie</label>
       <select id="m-category">
         <option value="alimentation">Alimentation</option>
+        <option value="vetements">Vêtements</option>
+        <option value="cadeaux">Cadeaux</option>
+        <option value="essence">Essence</option>
         <option value="logement">Logement</option>
         <option value="transport">Transport</option>
         <option value="loisirs">Loisirs</option>
@@ -140,7 +142,6 @@
       <button class="btn success" id="btn-save-manuel">Enregistrer</button>
     </section>
 
-    <!-- ECRAN 4 : Historique -->
     <section class="hidden" id="screen-historique">
       <div class="totaux">
         <div class="total-box box-depense"><div class="label">Depenses</div><div class="valeur" id="total-depenses">0.00 euro</div></div>
@@ -153,6 +154,9 @@
           <select id="filtre-categorie">
             <option value="">Toutes categories</option>
             <option value="alimentation">Alimentation</option>
+            <option value="vetements">Vêtements</option>
+            <option value="cadeaux">Cadeaux</option>
+            <option value="essence">Essence</option>
             <option value="logement">Logement</option>
             <option value="transport">Transport</option>
             <option value="loisirs">Loisirs</option>
@@ -165,9 +169,7 @@
       </div>
     </section>
 
-    <!-- ECRAN 5 : Graphiques -->
     <section class="hidden" id="screen-graphiques">
-
       <div class="card">
         <div class="graph-filtre">
           <label style="margin-top:0">Periode</label>
@@ -176,12 +178,10 @@
         <div class="graph-title">Depenses par categorie</div>
         <div class="canvas-wrap"><canvas id="chart-categories"></canvas></div>
       </div>
-
       <div class="card">
         <div class="graph-title">Evolution depenses / entrees par mois</div>
         <div class="canvas-wrap"><canvas id="chart-mensuel"></canvas></div>
       </div>
-
       <div class="card">
         <div class="graph-title">Solde cumule au fil des jours</div>
         <div class="graph-filtre">
@@ -189,7 +189,6 @@
         </div>
         <div class="canvas-wrap"><canvas id="chart-solde"></canvas></div>
       </div>
-
     </section>
 
   </main>
