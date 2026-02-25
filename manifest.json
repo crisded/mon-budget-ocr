@@ -1,0 +1,9 @@
+{
+  "name": "Mon Budget OCR",
+  "short_name": "BudgetOCR",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1976d2",
+  "icons": []
+}

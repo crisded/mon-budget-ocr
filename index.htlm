@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mon Budget OCR</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1976d2" />
+  <style>
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+    header { background: #1976d2; color: white; padding: 12px 16px; text-align: center; font-size: 18px; }
+    main { padding: 16px; }
+    .card { background: white; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 16px; }
+    .preview { border: 1px dashed #ccc; border-radius: 8px; height: 220px; display: flex; align-items: center; justify-content: center; color: #777; overflow: hidden; }
+    .preview img { max-width: 100%; max-height: 100%; }
+    button { width: 100%; padding: 12px; margin-top: 8px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
+    .primary { background: #1976d2; color: white; }
+    .secondary { background: #e0e0e0; color: #333; }
+    button:disabled { background: #bdbdbd; color: #eee; cursor: default; }
+    .help { font-size: 13px; color: #666; margin-top: 8px; }
+    .hidden { display: none; }
+    .progress { margin-top: 8px; font-size: 14px; color: #333; }
+    textarea { width: 100%; min-height: 120px; margin-top: 8px; padding: 8px; font-family: monospace; font-size: 13px; }
+    label { font-size: 14px; display: block; margin-top: 12px; }
+    input, select { width: 100%; padding: 8px; margin-top: 4px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <header>Mon Budget OCR</header>
+  <main>
+    <section class="card" id="screen-scan">
+      <h2>Scanner un ticket</h2>
+      <div class="preview" id="preview">
+        <span>Aucune image sélectionnée</span>
+      </div>
+      <input type="file" id="file-input" accept="image/*" capture="environment" class="hidden" />
+      <button class="primary" id="btn-choose">Prendre / choisir une photo</button>
+      <button class="secondary" id="btn-ocr" disabled>Lancer la lecture du ticket (OCR)</button>
+      <div class="progress" id="ocr-status"></div>
+      <p class="help">1. Prends la photo du ticket. 2. Appuie sur "Lancer la lecture" pour extraire le texte.</p>
+    </section>
+
+    <section class="card hidden" id="screen-validate">
+      <h2>Valider la dépense</h2>
+      <label>Texte brut du ticket (lecture automatique)</label>
+      <textarea id="ocr-text" readonly></textarea>
+
+      <label>Montant total (€)</label>
+      <input type="number" step="0.01" id="amount" />
+
+      <label>Date</label>
+      <input type="date" id="date" />
+
+      <label>Catégorie</label>
+      <select id="category">
+        <option value="alimentation">Alimentation</option>
+        <option value="logement">Logement</option>
+        <option value="transport">Transport</option>
+        <option value="loisirs">Loisirs</option>
+        <option value="sante">Santé</option>
+        <option value="autre">Autre</option>
+      </select>
+
+      <label>Commentaire</label>
+      <input type="text" id="comment" placeholder="Ex : Courses Carrefour, SNCF Montpellier-Nogent" />
+
+      <button class="primary" id="btn-save">Enregistrer la dépense</button>
+      <button class="secondary" id="btn-back">Revenir au scan</button>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
