@@ -340,3 +340,4 @@ if('serviceWorker' in navigator) {
 }
 showTab('scan');
 
+
