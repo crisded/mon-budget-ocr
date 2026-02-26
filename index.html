@@ -121,8 +121,110 @@
   </div>
 
   <p class="section-title">Historique</p>
+    
+  <div class="form-card" style="margin-bottom: 16px;">
+    <div class="form-row">
+      <label>Filtrer par mois</label>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <input type="month" id="mois-debut" style="flex: 1;">
+        <span style="color: #64748b; font-weight: 600;">à</span>
+        <input type="month" id="mois-fin" style="flex: 1;">
+        <button onclick="filtrerParMois()" class="btn-add" style="flex: 0.5; padding: 12px;">Filtrer</button>
+        <button onclick="resetFiltre()" class="btn-add" style="flex: 0.5; padding: 12px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">Reset</button>
+      </div>
+    </div>
+  </div>
   <div class="liste-section"><div id="liste-transactions"></div></div>
 
   <script src="main.js"></script>
+    <script>
+    let filtreActif = false;
+    let moisDebutFiltre = null;
+    let moisFinFiltre = null;
+
+    function filtrerParMois() {
+      const moisDebut = document.getElementById('mois-debut').value;
+      const moisFin = document.getElementById('mois-fin').value;
+      
+      if (!moisDebut || !moisFin) {
+        alert('Veuillez sélectionner les deux mois');
+        return;
+      }
+      
+      if (moisDebut > moisFin) {
+        alert('Le mois de début doit être avant le mois de fin');
+        return;
+      }
+      
+      filtreActif = true;
+      moisDebutFiltre = moisDebut;
+      moisFinFiltre = moisFin;
+      
+      afficherTransactions();
+      updateCharts();
+    }
+
+    function resetFiltre() {
+      filtreActif = false;
+      moisDebutFiltre = null;
+      moisFinFiltre = null;
+      document.getElementById('mois-debut').value = '';
+      document.getElementById('mois-fin').value = '';
+      
+      afficherTransactions();
+      updateCharts();
+    }
+
+    function getTransactionsFiltrees() {
+      const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+      
+      if (!filtreActif) {
+        return transactions;
+      }
+      
+      return transactions.filter(t => {
+        const transDate = t.date.substring(0, 7); // Format YYYY-MM
+        return transDate >= moisDebutFiltre && transDate <= moisFinFiltre;
+      });
+    }
+      
+    // Wrap existing functions from main.js to use filtered transactions
+    (function() {
+      // Wait for main.js to load
+      window.addEventListener('DOMContentLoaded', function() {
+        // Store original afficherTransactions if it exists
+        const originalAfficherTransactions = window.afficherTransactions;
+        const originalUpdateCharts = window.updateCharts;
+        
+        // Override afficherTransactions to use filtered data
+        if (originalAfficherTransactions) {
+          window.afficherTransactions = function() {
+            const transactions = getTransactionsFiltrees();
+            // Call original with filtered data by temporarily replacing localStorage
+            const originalTransactions = localStorage.getItem('transactions');
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            originalAfficherTransactions();
+            // Restore original
+            if (originalTransactions) {
+              localStorage.setItem('transactions', originalTransactions);
+            }
+          };
+        }
+        
+        // Override updateCharts to use filtered data
+        if (originalUpdateCharts) {
+          window.updateCharts = function() {
+            const transactions = getTransactionsFiltrees();
+            const originalTransactions = localStorage.getItem('transactions');
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            originalUpdateCharts();
+            if (originalTransactions) {
+              localStorage.setItem('transactions', originalTransactions);
+            }
+          };
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
