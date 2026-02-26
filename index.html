@@ -5,58 +5,71 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mon Budget</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#2196F3">
+  <meta name="theme-color" content="#6366f1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Mon Budget">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; color: #333; }
-    header { background: #2196F3; color: white; padding: 16px; text-align: center; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
-    header h1 { font-size: 1.2rem; font-weight: 600; }
-    .solde-card { background: white; margin: 16px; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    .solde-card .label { font-size: 0.85rem; color: #888; margin-bottom: 4px; }
-    .solde-card .montant { font-size: 2.2rem; font-weight: 700; }
-    .solde-card .montant.positif { color: #4CAF50; }
-    .solde-card .montant.negatif { color: #f44336; }
-    .solde-resume { display: flex; justify-content: space-around; margin-top: 14px; padding-top: 14px; border-top: 1px solid #eee; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #1e293b; min-height: 100vh; padding-bottom: 80px; }
+
+    header { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 24px 20px; text-align: center; box-shadow: 0 10px 40px rgba(99,102,241,0.3); }
+    header h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; }
+
+    .container { max-width: 800px; margin: 0 auto; padding: 0 16px; }
+
+    .solde-card { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); margin: 20px 16px; border-radius: 24px; padding: 28px 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.12), 0 0 0 1px rgba(255,255,255,0.5); }
+    .solde-card .label { font-size: 0.85rem; color: #64748b; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .solde-card .montant { font-size: 2.8rem; font-weight: 800; letter-spacing: -0.03em; }
+    .solde-card .montant.positif { background: linear-gradient(135deg, #10b981 0%, #34d399 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .solde-card .montant.negatif { background: linear-gradient(135deg, #ef4444 0%, #f87171 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .solde-resume { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; padding-top: 20px; border-top: 2px solid #e2e8f0; }
     .solde-resume div { text-align: center; }
-    .solde-resume .label { font-size: 0.75rem; color: #888; }
-    .solde-resume .val { font-size: 1.1rem; font-weight: 600; }
-    .solde-resume .val.rev { color: #4CAF50; }
-    .solde-resume .val.dep { color: #f44336; }
-    .section-title { font-size: 0.85rem; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; padding: 0 16px 8px; }
-    .chart-card { background: white; margin: 0 16px 16px; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    .chart-card h3 { font-size: 0.9rem; font-weight: 600; color: #555; margin-bottom: 12px; text-align: center; }
-    .chart-card canvas { max-height: 220px; }
-    .form-card { background: white; margin: 0 16px 16px; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    .type-toggle { display: flex; background: #f0f4f8; border-radius: 10px; padding: 4px; margin-bottom: 14px; }
-    .type-toggle button { flex: 1; border: none; background: transparent; padding: 8px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; font-weight: 500; transition: all 0.2s; }
-    .type-toggle button.active-dep { background: #f44336; color: white; }
-    .type-toggle button.active-rev { background: #4CAF50; color: white; }
-    .form-row { margin-bottom: 12px; }
-    .form-row label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 4px; }
-    .form-row input, .form-row select { width: 100%; padding: 10px 12px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 1rem; background: #fafafa; transition: border 0.2s; }
-    .form-row input:focus, .form-row select:focus { outline: none; border-color: #2196F3; background: white; }
-    .form-row input[type="date"] { color: #333; }
-    .btn-add { width: 100%; padding: 13px; background: #2196F3; color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-    .btn-add:active { background: #1976D2; }
-    .liste-section { margin: 0 16px 80px; }
-    .separateur-date { font-size: 0.8rem; font-weight: 700; color: #2196F3; text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 4px 6px; border-bottom: 2px solid #2196F322; margin-bottom: 8px; }
-    .separateur-cat { font-size: 0.75rem; font-weight: 600; color: #999; padding: 8px 4px 4px; margin-bottom: 4px; }
-    .transaction-item { background: white; border-radius: 12px; padding: 13px 16px; margin-bottom: 8px; display: flex; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
-    .transaction-icone { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-right: 12px; flex-shrink: 0; }
+    .solde-resume .label { font-size: 0.7rem; color: #94a3b8; margin-bottom: 4px; }
+    .solde-resume .val { font-size: 1.3rem; font-weight: 700; }
+    .solde-resume .val.rev { color: #10b981; }
+    .solde-resume .val.dep { color: #ef4444; }
+
+    .section-title { font-size: 0.8rem; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.1em; padding: 24px 16px 12px; margin-top: 8px; }
+
+    .card { background: white; margin: 0 16px 20px; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .card h3 { font-size: 1rem; font-weight: 700; color: #334155; margin-bottom: 16px; text-align: center; }
+    .card canvas { max-height: 240px; }
+
+    .form-card { background: white; margin: 0 16px 20px; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .type-toggle { display: grid; grid-template-columns: 1fr 1fr; background: #f1f5f9; border-radius: 14px; padding: 6px; margin-bottom: 20px; gap: 6px; }
+    .type-toggle button { border: none; background: transparent; padding: 12px; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.25s cubic-bezier(0.4,0,0.2,1); font-family: inherit; }
+    .type-toggle button.active-dep { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; box-shadow: 0 4px 12px rgba(239,68,68,0.4); }
+    .type-toggle button.active-rev { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.4); }
+    .type-toggle button:active { transform: scale(0.98); }
+    .form-row { margin-bottom: 16px; }
+    .form-row label { display: block; font-size: 0.85rem; color: #64748b; margin-bottom: 8px; font-weight: 600; }
+    .form-row input, .form-row select { width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; background: #f8fafc; transition: all 0.2s; font-family: inherit; font-weight: 500; }
+    .form-row input:focus, .form-row select:focus { outline: none; border-color: #6366f1; background: white; box-shadow: 0 0 0 4px rgba(99,102,241,0.1); }
+    .form-row input[type="date"] { color: #334155; }
+    .btn-add { width: 100%; padding: 16px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; border-radius: 14px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: all 0.25s cubic-bezier(0.4,0,0.2,1); box-shadow: 0 10px 25px rgba(99,102,241,0.3); font-family: inherit; }
+    .btn-add:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(99,102,241,0.4); }
+    .btn-add:active { transform: translateY(0); }
+
+    .liste-section { margin: 0 16px 40px; }
+    .separateur-date { font-size: 0.75rem; font-weight: 700; color: white; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 16px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .separateur-cat { font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.9); padding: 8px 12px 6px; margin-bottom: 8px; }
+
+    .transaction-item { background: white; border-radius: 16px; padding: 16px; margin-bottom: 10px; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: all 0.2s; }
+    .transaction-item:active { transform: scale(0.99); }
+    .transaction-icone { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-right: 14px; flex-shrink: 0; }
     .transaction-info { flex: 1; }
-    .transaction-info .desc { font-weight: 600; font-size: 0.95rem; }
-    .transaction-info .cat-date { font-size: 0.75rem; color: #aaa; margin-top: 2px; }
-    .transaction-montant { font-weight: 700; font-size: 1.05rem; }
-    .transaction-montant.dep { color: #f44336; }
-    .transaction-montant.rev { color: #4CAF50; }
-    .btn-suppr { background: none; border: none; color: #ccc; font-size: 1.2rem; cursor: pointer; padding: 4px 6px; margin-left: 8px; }
-    .btn-suppr:active { color: #f44336; }
-    .vide { text-align: center; color: #bbb; padding: 30px 0; font-size: 0.95rem; }
+    .transaction-info .desc { font-weight: 700; font-size: 1rem; color: #1e293b; }
+    .transaction-info .cat-date { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; font-weight: 500; }
+    .transaction-montant { font-weight: 800; font-size: 1.1rem; }
+    .transaction-montant.dep { color: #ef4444; }
+    .transaction-montant.rev { color: #10b981; }
+    .btn-suppr { background: rgba(239,68,68,0.1); border: none; color: #ef4444; font-size: 1.4rem; cursor: pointer; padding: 8px 10px; margin-left: 12px; border-radius: 10px; transition: all 0.2s; font-weight: 700; }
+    .btn-suppr:active { background: #ef4444; color: white; transform: scale(0.95); }
+    .vide { text-align: center; color: rgba(255,255,255,0.7); padding: 40px 20px; font-size: 1rem; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -71,32 +84,18 @@
     </div>
   </div>
 
-  <div style="padding: 0 0 8px;"><p class="section-title">📊 Graphiques</p></div>
+  <p class="section-title">📊 Graphiques</p>
+  <div class="card"><h3>🍧 Dépenses par catégorie</h3><canvas id="chartCamembert"></canvas></div>
+  <div class="card"><h3>📈 Évolution du solde</h3><canvas id="chartCourbe"></canvas></div>
 
-  <div class="chart-card">
-    <h3>🍧 Dépenses par catégorie</h3>
-    <canvas id="chartCamembert"></canvas>
-  </div>
-
-  <div class="chart-card">
-    <h3>📈 Évolution du solde</h3>
-    <canvas id="chartCourbe"></canvas>
-  </div>
-
-  <div style="padding: 0 0 8px;"><p class="section-title">Nouvelle transaction</p></div>
+  <p class="section-title">Nouvelle transaction</p>
   <div class="form-card">
     <div class="type-toggle">
       <button id="btn-dep" class="active-dep" onclick="setType('depense')">➖ Dépense</button>
       <button id="btn-rev" onclick="setType('revenu')">➕ Revenu</button>
     </div>
-    <div class="form-row">
-      <label>Montant (€)</label>
-      <input type="number" id="montant" placeholder="0.00" min="0" step="0.01">
-    </div>
-    <div class="form-row">
-      <label>Description</label>
-      <input type="text" id="description" placeholder="Ex: Courses, Loyer...">
-    </div>
+    <div class="form-row"><label>Montant (€)</label><input type="number" id="montant" placeholder="0.00" min="0" step="0.01"></div>
+    <div class="form-row"><label>Description</label><input type="text" id="description" placeholder="Ex: Courses, Loyer..."></div>
     <div class="form-row">
       <label>Catégorie</label>
       <select id="categorie">
@@ -117,17 +116,12 @@
         <option value="Autre">📦 Autre</option>
       </select>
     </div>
-    <div class="form-row">
-      <label>📅 Date</label>
-      <input type="date" id="date-transaction">
-    </div>
+    <div class="form-row"><label>📅 Date</label><input type="date" id="date-transaction"></div>
     <button class="btn-add" onclick="ajouterTransaction()">Ajouter</button>
   </div>
 
-  <div class="liste-section">
-    <p class="section-title">Historique</p>
-    <div id="liste-transactions"></div>
-  </div>
+  <p class="section-title">Historique</p>
+  <div class="liste-section"><div id="liste-transactions"></div></div>
 
   <script src="main.js"></script>
 </body>
