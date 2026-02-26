@@ -2,16 +2,16 @@
 const ICONES = {
   Alimentation: '🛒', Transport: '🚗', Logement: '🏠',
   Loisirs: '🎮', Sante: '💊', Vetements: '👕',
-  Cadeau: '🎁', Assurance: '🛡️', Electricite: '⚡',
-  Gaz: '🔥', Voiture: '🚙', Vacances: '✈️',
-  Salaire: '💼', Autre: '📦'
+  Cadeau: '🎁', Assurance: '🛡️', Abonnement: '📱',
+  Electricite: '⚡', Gaz: '🔥', Voiture: '🚙',
+  Vacances: '✈️', Salaire: '💼', Autre: '📦'
 };
 const COULEURS = {
   Alimentation: '#FF9800', Transport: '#2196F3', Logement: '#9C27B0',
   Loisirs: '#E91E63', Sante: '#4CAF50', Vetements: '#FF5722',
-  Cadeau: '#F06292', Assurance: '#455A64', Electricite: '#FFC107',
-  Gaz: '#FF7043', Voiture: '#0288D1', Vacances: '#26A69A',
-  Salaire: '#00BCD4', Autre: '#607D8B'
+  Cadeau: '#F06292', Assurance: '#455A64', Abonnement: '#7B1FA2',
+  Electricite: '#FFC107', Gaz: '#FF7043', Voiture: '#0288D1',
+  Vacances: '#26A69A', Salaire: '#00BCD4', Autre: '#607D8B'
 };
 
 let typeActuel = 'depense';
@@ -42,20 +42,10 @@ function ajouterTransaction() {
   const categorie = document.getElementById('categorie').value;
   const dateValeur = document.getElementById('date-transaction').value;
 
-  if (!montant || montant <= 0) {
-    alert('Veuillez entrer un montant valide.');
-    return;
-  }
-  if (!description) {
-    alert('Veuillez entrer une description.');
-    return;
-  }
-  if (!dateValeur) {
-    alert('Veuillez choisir une date.');
-    return;
-  }
+  if (!montant || montant <= 0) { alert('Veuillez entrer un montant valide.'); return; }
+  if (!description) { alert('Veuillez entrer une description.'); return; }
+  if (!dateValeur) { alert('Veuillez choisir une date.'); return; }
 
-  // Convertir la date YYYY-MM-DD en format francais DD/MM/YYYY
   const [annee, mois, jour] = dateValeur.split('-');
   const dateAffichee = `${jour}/${mois}/${annee}`;
 
@@ -69,17 +59,10 @@ function ajouterTransaction() {
     dateISO: dateValeur
   };
 
-  transactions.unshift(transaction);
-  // Trier par date decroissante
-  transactions.sort((a, b) => {
-    const da = a.dateISO || '0000-00-00';
-    const db = b.dateISO || '0000-00-00';
-    return db.localeCompare(da);
-  });
+  transactions.push(transaction);
   sauvegarder();
   afficher();
 
-  // Reinitialiser le formulaire
   document.getElementById('montant').value = '';
   document.getElementById('description').value = '';
   const today = new Date().toISOString().split('T')[0];
@@ -100,6 +83,13 @@ function formaterMontant(montant) {
   return montant.toFixed(2).replace('.', ',') + ' €';
 }
 
+function formaterDateLisible(dateISO) {
+  if (!dateISO) return '';
+  const [annee, mois, jour] = dateISO.split('-');
+  const moisNoms = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  return `${parseInt(jour)} ${moisNoms[parseInt(mois)-1]} ${annee}`;
+}
+
 function afficher() {
   // Calcul solde
   let totalRev = 0, totalDep = 0;
@@ -115,30 +105,61 @@ function afficher() {
   document.getElementById('total-rev').textContent = formaterMontant(totalRev);
   document.getElementById('total-dep').textContent = formaterMontant(totalDep);
 
-  // Liste des transactions
   const liste = document.getElementById('liste-transactions');
   if (transactions.length === 0) {
     liste.innerHTML = '<div class="vide">Aucune transaction pour le moment</div>';
     return;
   }
 
-  liste.innerHTML = transactions.map(t => {
+  // Tri : date decroissante, puis categorie alphabetique
+  const triees = [...transactions].sort((a, b) => {
+    const da = a.dateISO || '0000-00-00';
+    const db = b.dateISO || '0000-00-00';
+    if (db !== da) return db.localeCompare(da);
+    return (a.categorie || '').localeCompare(b.categorie || '');
+  });
+
+  // Affichage avec separateurs par date puis par categorie
+  let html = '';
+  let dateCourante = null;
+  let categorieCourante = null;
+
+  triees.forEach(t => {
     const icone = ICONES[t.categorie] || '📦';
     const couleur = COULEURS[t.categorie] || '#607D8B';
     const signe = t.type === 'depense' ? '-' : '+';
     const classe = t.type === 'depense' ? 'dep' : 'rev';
-    return `
+    const dateISO = t.dateISO || '';
+
+    // Separateur de date
+    if (dateISO !== dateCourante) {
+      dateCourante = dateISO;
+      categorieCourante = null;
+      const dateLisible = dateISO ? formaterDateLisible(dateISO) : t.date || 'Date inconnue';
+      html += `<div class="separateur-date">📅 ${dateLisible}</div>`;
+    }
+
+    // Separateur de categorie (dans chaque jour)
+    if (t.categorie !== categorieCourante) {
+      categorieCourante = t.categorie;
+      const icCat = ICONES[t.categorie] || '📦';
+      html += `<div class="separateur-cat">${icCat} ${t.categorie}</div>`;
+    }
+
+    html += `
       <div class="transaction-item">
         <div class="transaction-icone" style="background:${couleur}22;">${icone}</div>
         <div class="transaction-info">
           <div class="desc">${t.description}</div>
-          <div class="cat-date">${t.categorie} • ${t.date}</div>
+          <div class="cat-date">${t.date || ''}</div>
         </div>
         <div class="transaction-montant ${classe}">${signe}${formaterMontant(t.montant)}</div>
         <button class="btn-suppr" onclick="supprimerTransaction(${t.id})">×</button>
       </div>
     `;
-  }).join('');
+  });
+
+  liste.innerHTML = html;
 }
 
 // Enregistrement du service worker
@@ -149,5 +170,4 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Affichage initial
 afficher();
