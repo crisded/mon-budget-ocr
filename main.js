@@ -1,12 +1,16 @@
 // Icones par categorie
 const ICONES = {
   Alimentation: '🛒', Transport: '🚗', Logement: '🏠',
-  Loisirs: '🎮', Sante: '💊', Vetements: '👗',
+  Loisirs: '🎮', Sante: '💊', Vetements: '👕',
+  Cadeau: '🎁', Assurance: '🛡️', Electricite: '⚡',
+  Gaz: '🔥', Voiture: '🚙', Vacances: '✈️',
   Salaire: '💼', Autre: '📦'
 };
 const COULEURS = {
   Alimentation: '#FF9800', Transport: '#2196F3', Logement: '#9C27B0',
   Loisirs: '#E91E63', Sante: '#4CAF50', Vetements: '#FF5722',
+  Cadeau: '#F06292', Assurance: '#455A64', Electricite: '#FFC107',
+  Gaz: '#FF7043', Voiture: '#0288D1', Vacances: '#26A69A',
   Salaire: '#00BCD4', Autre: '#607D8B'
 };
 
