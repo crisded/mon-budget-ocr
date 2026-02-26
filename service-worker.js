@@ -1,4 +1,4 @@
-const CACHE_NAME = 'budget-ocr-v4';
+const CACHE_NAME = 'budget-ocr-v5';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -8,9 +8,7 @@ self.addEventListener('install', (event) => {
         './',
         './index.html',
         './main.js',
-        './manifest.json',
-        'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
-        'https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.js'
+        './manifest.json'
       ]);
     })
   );
