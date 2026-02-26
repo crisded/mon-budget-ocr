@@ -74,6 +74,49 @@ header { background: #2196F3; color: white; padding: 16px 20px; text-align: cent
 </head>
 <body>
   <header><h1>💰 Mon Budget</h1></header>
+  
+  <!-- Section Sommaire -->
+  <p class="section-title">📊 Sommaire</p>
+  
+  <div class="card" style="margin: 0 16px 20px;">
+    <h3 style="margin-bottom: 20px;">📅 Ce mois-ci</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <div style="text-align: center;">
+        <canvas id="chartMois" style="max-width: 150px; margin: 0 auto;"></canvas>
+        <p style="margin-top: 12px; font-size: 0.85rem; color: #64748b;">Dépenses du mois</p>
+      </div>
+      <div style="padding: 12px;">
+        <div style="margin-bottom: 12px;">
+          <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">Revenus</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: #10b981;" id="rev-mois">0,00 €</div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">Dépenses</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: #ef4444;" id="dep-mois">0,00 €</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="card" style="margin: 0 16px 20px;">
+    <h3 style="margin-bottom: 20px;">📆 Cette année</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <div style="text-align: center;">
+        <canvas id="chartAnnee" style="max-width: 150px; margin: 0 auto;"></canvas>
+        <p style="margin-top: 12px; font-size: 0.85rem; color: #64748b;">Dépenses de l'année</p>
+      </div>
+      <div style="padding: 12px;">
+        <div style="margin-bottom: 12px;">
+          <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">Revenus</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: #10b981;" id="rev-annee">0,00 €</div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">Dépenses</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: #ef4444;" id="dep-annee">0,00 €</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="solde-card">
     <div class="label">Solde actuel</div>
@@ -225,6 +268,97 @@ header { background: #2196F3; color: white; padding: 16px 20px; text-align: cent
         }
       });
     })();
-  </script>
+  
+    // Fonction pour mettre à jour les graphiques de sommaire
+    function updateSommaire() {
+      const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+      const now = new Date();
+      const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+      const currentYear = now.getFullYear();
+      
+      // Calculs pour ce mois
+      let revMois = 0, depMois = 0;
+      const transMois = transactions.filter(t => t.date.startsWith(currentMonth));
+      transMois.forEach(t => {
+        if (t.type === 'revenu') revMois += t.montant;
+        else depMois += t.montant;
+      });
+      
+      // Calculs pour cette année
+      let revAnnee = 0, depAnnee = 0;
+      const transAnnee = transactions.filter(t => t.date.startsWith(String(currentYear)));
+      transAnnee.forEach(t => {
+        if (t.type === 'revenu') revAnnee += t.montant;
+        else depAnnee += t.montant;
+      });
+      
+      // Mise à jour des totaux
+      document.getElementById('rev-mois').textContent = revMois.toFixed(2) + ' €';
+      document.getElementById('dep-mois').textContent = depMois.toFixed(2) + ' €';
+      document.getElementById('rev-annee').textContent = revAnnee.toFixed(2) + ' €';
+      document.getElementById('dep-annee').textContent = depAnnee.toFixed(2) + ' €';
+      
+      // Graphique du mois (donut)
+      const ctxMois = document.getElementById('chartMois');
+      if (window.chartMoisInstance) window.chartMoisInstance.destroy();
+      window.chartMoisInstance = new Chart(ctxMois, {
+        type: 'doughnut',
+        data: {
+          labels: ['Dépenses', 'Restant'],
+          datasets: [{
+            data: [depMois, Math.max(0, revMois - depMois)],
+            backgroundColor: ['#ef4444', '#e0e0e0'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          cutout: '70%',
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: true }
+          }
+        }
+      });
+      
+      // Graphique de l'année (donut)
+      const ctxAnnee = document.getElementById('chartAnnee');
+      if (window.chartAnneeInstance) window.chartAnneeInstance.destroy();
+      window.chartAnneeInstance = new Chart(ctxAnnee, {
+        type: 'doughnut',
+        data: {
+          labels: ['Dépenses', 'Restant'],
+          datasets: [{
+            data: [depAnnee, Math.max(0, revAnnee - depAnnee)],
+            backgroundColor: ['#ef4444', '#e0e0e0'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          cutout: '70%',
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: true }
+          }
+        }
+      });
+    }
+    
+    // Appeler updateSommaire quand la page charge et quand les données changent
+    window.addEventListener('DOMContentLoaded', function() {
+      updateSommaire();
+      // Override pour rafraîchir le sommaire aussi
+      const originalAjouterTransaction = window.ajouterTransaction;
+      if (originalAjouterTransaction) {
+        window.ajouterTransaction = function() {
+          originalAjouterTransaction();
+          updateSommaire();
+        };
+      }
+    });
+    </script>
 </body>
 </html>
