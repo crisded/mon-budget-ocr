@@ -102,26 +102,30 @@ const fileInput = document.getElementById('file-input');
 const btnOcr = document.getElementById('btn-ocr');
 const ocrStatus = document.getElementById('ocr-status');
 
-document.getElementById('btn-choose').addEventListener('click', () => fileInput.click());
+if (document.getElementById('btn-choose')) {
+  document.getElementById('btn-choose').addEventListener('click', () => fileInput.click());
+}
 
-fileInput.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+if (fileInput) {
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  selectedImage = file;
-  const reader = new FileReader();
+    selectedImage = file;
+    const reader = new FileReader();
 
-  reader.onload = ev => {
-    const p = document.getElementById('preview');
-    p.innerHTML = '';
-    const img = document.createElement('img');
-    img.src = ev.target.result;
-    p.appendChild(img);
-    btnOcr.disabled = false;
-  };
+    reader.onload = ev => {
+      const p = document.getElementById('preview');
+      p.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = ev.target.result;
+      p.appendChild(img);
+      btnOcr.disabled = false;
+    };
 
-  reader.readAsDataURL(file);
-});
+    reader.readAsDataURL(file);
+  });
+}
 
 async function preprocessImage(imageFile) {
   return new Promise((resolve) => {
@@ -160,100 +164,107 @@ async function preprocessImage(imageFile) {
   });
 }
 
-btnOcr.addEventListener('click', async () => {
-  ocrStatus.textContent = 'Préparation de l\'image (optimisation)...';
-  btnOcr.disabled = true;
+if (btnOcr) {
+  btnOcr.addEventListener('click', async () => {
+    ocrStatus.textContent = 'Préparation de l\'image (optimisation)...';
+    btnOcr.disabled = true;
 
-  try {
-    const processedImage = await preprocessImage(selectedImage);
-    ocrStatus.textContent = 'Lecture intelligente en cours...';
+    try {
+      const processedImage = await preprocessImage(selectedImage);
+      ocrStatus.textContent = 'Lecture intelligente en cours...';
 
-    // On utilise Tesseract avec des paramètres pour ne chercher que des chiffres et des mots français
-    const worker = await Tesseract.createWorker('fra');
-    const { data: { text } } = await worker.recognize(processedImage);
-    await worker.terminate();
+      // On utilise Tesseract avec des paramètres pour ne chercher que des chiffres et des mots français
+      const worker = await Tesseract.createWorker('fra');
+      const { data: { text } } = await worker.recognize(processedImage);
+      await worker.terminate();
 
-    document.getElementById('ocr-text').value = text;
+      document.getElementById('ocr-text').value = text;
 
-    // Analyse du texte pour trouver le montant TTC
-    // On nettoie le texte des caractères bizarres souvent lus par erreur
-    const lines = text.split('\n');
-    let foundPrices = [];
+      // Analyse du texte pour trouver le montant TTC
+      // On nettoie le texte des caractères bizarres souvent lus par erreur
+      const lines = text.split('
+');
+      let foundPrices = [];
 
-    lines.forEach(line => {
-      // On cherche les patterns type "24,50" ou "24.50" ou "TOTAL 24.50"
-      const matches = line.match(/\d+[\s.,]\d{2}/g);
-      if (matches) {
-        matches.forEach(m => {
-          const val = parseFloat(m.replace(/\s/g, '').replace(',', '.'));
-          if (!isNaN(val) && val < 5000) foundPrices.push(val);
-        });
+      lines.forEach(line => {
+        // On cherche les patterns type \"24,50\" ou \"24.50\" ou \"TOTAL 24.50\"
+        const matches = line.match(/\d+[\s.,]\d{2}/g);
+        if (matches) {
+          matches.forEach(m => {
+            const val = parseFloat(m.replace(/\s/g, '').replace(',', '.'));
+            if (!isNaN(val) && val < 5000) foundPrices.push(val);
+          });
+        }
+      });
+
+      if (foundPrices.length > 0) {
+        // On prend le montant maximum car c'est généralement le TOTAL TTC
+        const total = Math.max(...foundPrices);
+        document.getElementById('amount').value = total.toFixed(2);
       }
-    });
 
-    if (foundPrices.length > 0) {
-      // On prend le montant maximum car c'est généralement le TOTAL TTC
-      const total = Math.max(...foundPrices);
-      document.getElementById('amount').value = total.toFixed(2);
+      document.getElementById('date').value = new Date().toISOString().split('T')[0];
+      ocrStatus.textContent = '';
+      document.getElementById('screen-scan').classList.add('hidden');
+      document.getElementById('screen-validate').classList.remove('hidden');
+    } catch (e) {
+      console.error(e);
+      ocrStatus.textContent = 'Erreur. Essayez une photo plus nette.';
+      btnOcr.disabled = false;
     }
-
-    document.getElementById('date').value = new Date().toISOString().split('T')[0];
-    ocrStatus.textContent = '';
-    document.getElementById('screen-scan').classList.add('hidden');
-    document.getElementById('screen-validate').classList.remove('hidden');
-  } catch (e) {
-    console.error(e);
-    ocrStatus.textContent = 'Erreur. Essayez une photo plus nette.';
-    btnOcr.disabled = false;
-  }
-});
+  });
+}
 
 // ========================
 // ENREGISTREMENT
 // ========================
-document.getElementById('btn-save').addEventListener('click', () => {
-  const amount = parseFloat(document.getElementById('amount').value);
-  const date = document.getElementById('date').value;
+if (document.getElementById('btn-save')) {
+  document.getElementById('btn-save').addEventListener('click', () => {
+    const amount = parseFloat(document.getElementById('amount').value);
+    const date = document.getElementById('date').value;
 
-  if (!amount || !date) return alert('Veuillez saisir un montant et une date.');
+    if (!amount || !date) return alert('Veuillez saisir un montant et une date.');
 
-  const ops = loadOperations();
-  ops.push({
-    id: Date.now(),
-    type: typeOcr,
-    amount: amount,
-    date: date,
-    category: document.getElementById('category').value,
-    comment: document.getElementById('comment').value.trim()
+    const ops = loadOperations();
+    ops.push({
+      id: Date.now(),
+      type: typeOcr,
+      amount: amount,
+      date: date,
+      category: document.getElementById('category').value,
+      comment: document.getElementById('comment').value.trim()
+    });
+
+    saveOperations(ops);
+    alert('Opération enregistrée !');
+    showTab('scan');
   });
+}
 
-  saveOperations(ops);
-  alert('Opération enregistrée !');
-  showTab('scan');
-});
+if (document.getElementById('btn-save-manuel')) {
+  document.getElementById('btn-save-manuel').addEventListener('click', () => {
+    const amount = parseFloat(document.getElementById('m-amount').value);
+    const date = document.getElementById('m-date').value;
 
-document.getElementById('btn-save-manuel').addEventListener('click', () => {
-  const amount = parseFloat(document.getElementById('m-amount').value);
-  const date = document.getElementById('m-date').value;
+    if (!amount || !date) return alert('Veuillez saisir un montant et une date.');
 
-  if (!amount || !date) return alert('Veuillez saisir un montant et une date.');
+    const ops = loadOperations();
+    ops.push({
+      id: Date.now(),
+      type: typeManuel,
+      amount: amount,
+      date: date,
+      category: document.getElementById('m-category').value,
+      comment: document.getElementById('m-comment').value.trim()
+    });
 
-  const ops = loadOperations();
-  ops.push({
-    id: Date.now(),
-    type: typeManuel,
-    amount: amount,
-    date: date,
-    category: document.getElementById('m-category').value,
-    comment: document.getElementById('m-comment').value.trim()
+    saveOperations(ops);
+    alert('Opération enregistrée !');
+    document.getElementById('m-amount').value = '';
+    document.getElementById('m-comment').value = '';
+    renderHistorique();
   });
-
-  saveOperations(ops);
-  alert('Opération enregistrée !');
-  document.getElementById('m-amount').value = '';
-  document.getElementById('m-comment').value = '';
-  renderHistorique();
-});
+}
 
 // ========================
 // HISTORIQUE
@@ -269,16 +280,21 @@ function renderHistorique() {
     else tEnt += o.amount;
   });
 
-  document.getElementById('total-depenses').textContent = `-${tDep.toFixed(2)} €`;
-  document.getElementById('total-entrees').textContent = `+${tEnt.toFixed(2)} €`;
+  const totalDepensesEl = document.getElementById('total-depenses');
+  const totalEntreesEl = document.getElementById('total-entrees');
+  const totalSoldeEl = document.getElementById('total-solde');
+
+  if (totalDepensesEl) totalDepensesEl.textContent = `-${tDep.toFixed(2)} €`;
+  if (totalEntreesEl) totalEntreesEl.textContent = `+${tEnt.toFixed(2)} €`;
 
   const solde = tEnt - tDep;
-  const sEl = document.getElementById('total-solde');
-  sEl.textContent = `${solde >= 0 ? '+' : ''}${solde.toFixed(2)} €`;
-  sEl.style.color = solde >= 0 ? '#388e3c' : '#d32f2f';
+  if (totalSoldeEl) {
+    totalSoldeEl.textContent = `${solde >= 0 ? '+' : ''}${solde.toFixed(2)} €`;
+    totalSoldeEl.style.color = solde >= 0 ? '#388e3c' : '#d32f2f';
+  }
 
   if (ops.length === 0) {
-    container.innerHTML = '<div style="text-align:center;color:#999;padding:20px;">Aucune opération.</div>';
+    container.innerHTML = '<div style=\"text-align:center;color:#999;padding:20px;\">Aucune opération.</div>';
     return;
   }
 
@@ -288,18 +304,18 @@ function renderHistorique() {
   ops.forEach(op => {
     const d = op.date.split('-');
     const badge = op.type === 'depense' ? 'badge-depense' : 'badge-entree';
-    html += `
+    html += \`
       <tr>
-        <td>${d[2]}/${d[1]}</td>
+        <td>\${d[2]}/\${d[1]}</td>
         <td>
-          <span class="badge ${badge}">${CAT_LABELS[op.category]}</span>
-          <small>${op.comment}</small>
+          <span class=\"badge \${badge}\">\${CAT_LABELS[op.category]}</span>
+          <br><small>\${op.comment}</small>
         </td>
-        <td style="color:${op.type === 'depense' ? '#d32f2f' : '#388e3c'}">
-          ${op.type === 'depense' ? '-' : '+'}${op.amount.toFixed(2)}
+        <td style=\"color:\${op.type === 'depense' ? '#d32f2f' : '#388e3c'}\">
+          \${op.type === 'depense' ? '-' : '+'}\${op.amount.toFixed(2)}
         </td>
-        <td><button class="btn-suppr" onclick="supprimerOp(${op.id})">🗑️</button></td>
-      </tr>`;
+        <td><button class=\"btn-suppr\" onclick=\"supprimerOp(\${op.id})\">🗑️</button></td>
+      </tr>\`;
   });
 
   container.innerHTML = html + '</tbody></table>';
