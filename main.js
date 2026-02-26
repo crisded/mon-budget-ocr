@@ -51,20 +51,17 @@ function saveOperations(ops) {
 // ========================
 // NAVIGATION
 // ========================
-function showTab(tab) {
+window.showTab = function(tab) {
   const screens = ['screen-scan', 'screen-validate', 'screen-manuel', 'screen-historique', 'screen-graphiques'];
   const navs = ['nav-scan', 'nav-manuel', 'nav-historique', 'nav-graphiques'];
-
   screens.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.add('hidden');
   });
-
   navs.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('active');
   });
-
   if (tab === 'scan') {
     document.getElementById('screen-scan').classList.remove('hidden');
     document.getElementById('nav-scan').classList.add('active');
@@ -81,9 +78,9 @@ function showTab(tab) {
     document.getElementById('nav-graphiques').classList.add('active');
     initGraphiques();
   }
-}
+};
 
-function setType(ctx, t) {
+window.setType = function(ctx, t) {
   if (ctx === 'ocr') {
     typeOcr = t;
     document.getElementById('type-depense-ocr').className = t === 'depense' ? 'selected-depense' : '';
@@ -93,10 +90,10 @@ function setType(ctx, t) {
     document.getElementById('type-depense-m').className = t === 'depense' ? 'selected-depense' : '';
     document.getElementById('type-entree-m').className = t === 'entree' ? 'selected-entree' : '';
   }
-}
+};
 
 // ========================
-// SCAN & OCR (VERSION AMELIOREE)
+// SCAN & OCR
 // ========================
 const fileInput = document.getElementById('file-input');
 const btnOcr = document.getElementById('btn-ocr');
@@ -110,10 +107,8 @@ if (fileInput) {
   fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     selectedImage = file;
     const reader = new FileReader();
-
     reader.onload = ev => {
       const p = document.getElementById('preview');
       p.innerHTML = '';
@@ -122,7 +117,6 @@ if (fileInput) {
       p.appendChild(img);
       btnOcr.disabled = false;
     };
-
     reader.readAsDataURL(file);
   });
 }
@@ -130,64 +124,43 @@ if (fileInput) {
 async function preprocessImage(imageFile) {
   return new Promise((resolve) => {
     const img = new Image();
-
     img.onload = () => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-
-      // On agrandit l'image pour une meilleure lecture des petits caractères
       const scale = 2;
       canvas.width = img.width * scale;
       canvas.height = img.height * scale;
-
-      // On dessine l'image avec des filtres pour simuler un scanner
       ctx.filter = 'grayscale(1) contrast(2) brightness(1)';
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-      // On récupère les données de l'image pour un traitement pixel par pixel (seuillage)
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
-
       for (let i = 0; i < data.length; i += 4) {
         const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-        // Si le pixel est gris clair, il devient blanc. Si c'est gris foncé, il devient noir.
         const threshold = 120;
         const v = avg > threshold ? 255 : 0;
         data[i] = data[i + 1] = data[i + 2] = v;
       }
-
       ctx.putImageData(imageData, 0, 0);
       resolve(canvas.toDataURL('image/png'));
     };
-
     img.src = URL.createObjectURL(imageFile);
   });
 }
 
 if (btnOcr) {
   btnOcr.addEventListener('click', async () => {
-    ocrStatus.textContent = 'Préparation de l\'image (optimisation)...';
+    ocrStatus.textContent = 'Préparation de l\'image...';
     btnOcr.disabled = true;
-
     try {
       const processedImage = await preprocessImage(selectedImage);
       ocrStatus.textContent = 'Lecture intelligente en cours...';
-
-      // On utilise Tesseract avec des paramètres pour ne chercher que des chiffres et des mots français
       const worker = await Tesseract.createWorker('fra');
       const { data: { text } } = await worker.recognize(processedImage);
       await worker.terminate();
-
       document.getElementById('ocr-text').value = text;
-
-      // Analyse du texte pour trouver le montant TTC
-      // On nettoie le texte des caractères bizarres souvent lus par erreur
-      const lines = text.split('
-');
+      const lines = text.split('\n');
       let foundPrices = [];
-
       lines.forEach(line => {
-        // On cherche les patterns type \"24,50\" ou \"24.50\" ou \"TOTAL 24.50\"
         const matches = line.match(/\d+[\s.,]\d{2}/g);
         if (matches) {
           matches.forEach(m => {
@@ -196,13 +169,10 @@ if (btnOcr) {
           });
         }
       });
-
       if (foundPrices.length > 0) {
-        // On prend le montant maximum car c'est généralement le TOTAL TTC
         const total = Math.max(...foundPrices);
         document.getElementById('amount').value = total.toFixed(2);
       }
-
       document.getElementById('date').value = new Date().toISOString().split('T')[0];
       ocrStatus.textContent = '';
       document.getElementById('screen-scan').classList.add('hidden');
@@ -222,9 +192,7 @@ if (document.getElementById('btn-save')) {
   document.getElementById('btn-save').addEventListener('click', () => {
     const amount = parseFloat(document.getElementById('amount').value);
     const date = document.getElementById('date').value;
-
     if (!amount || !date) return alert('Veuillez saisir un montant et une date.');
-
     const ops = loadOperations();
     ops.push({
       id: Date.now(),
@@ -234,7 +202,6 @@ if (document.getElementById('btn-save')) {
       category: document.getElementById('category').value,
       comment: document.getElementById('comment').value.trim()
     });
-
     saveOperations(ops);
     alert('Opération enregistrée !');
     showTab('scan');
@@ -245,9 +212,7 @@ if (document.getElementById('btn-save-manuel')) {
   document.getElementById('btn-save-manuel').addEventListener('click', () => {
     const amount = parseFloat(document.getElementById('m-amount').value);
     const date = document.getElementById('m-date').value;
-
     if (!amount || !date) return alert('Veuillez saisir un montant et une date.');
-
     const ops = loadOperations();
     ops.push({
       id: Date.now(),
@@ -257,7 +222,6 @@ if (document.getElementById('btn-save-manuel')) {
       category: document.getElementById('m-category').value,
       comment: document.getElementById('m-comment').value.trim()
     });
-
     saveOperations(ops);
     alert('Opération enregistrée !');
     document.getElementById('m-amount').value = '';
@@ -286,7 +250,6 @@ function renderHistorique() {
 
   if (totalDepensesEl) totalDepensesEl.textContent = `-${tDep.toFixed(2)} €`;
   if (totalEntreesEl) totalEntreesEl.textContent = `+${tEnt.toFixed(2)} €`;
-
   const solde = tEnt - tDep;
   if (totalSoldeEl) {
     totalSoldeEl.textContent = `${solde >= 0 ? '+' : ''}${solde.toFixed(2)} €`;
@@ -294,34 +257,27 @@ function renderHistorique() {
   }
 
   if (ops.length === 0) {
-    container.innerHTML = '<div style=\"text-align:center;color:#999;padding:20px;\">Aucune opération.</div>';
+    container.innerHTML = '<p>Aucune opération.</p>';
     return;
   }
 
   ops.sort((a, b) => b.date.localeCompare(a.date));
-
   let html = '<table><thead><tr><th>Date</th><th>Cat.</th><th>Montant</th><th></th></tr></thead><tbody>';
   ops.forEach(op => {
     const d = op.date.split('-');
     const badge = op.type === 'depense' ? 'badge-depense' : 'badge-entree';
-    html += \`
-      <tr>
-        <td>\${d[2]}/\${d[1]}</td>
-        <td>
-          <span class=\"badge \${badge}\">\${CAT_LABELS[op.category]}</span>
-          <br><small>\${op.comment}</small>
-        </td>
-        <td style=\"color:\${op.type === 'depense' ? '#d32f2f' : '#388e3c'}\">
-          \${op.type === 'depense' ? '-' : '+'}\${op.amount.toFixed(2)}
-        </td>
-        <td><button class=\"btn-suppr\" onclick=\"supprimerOp(\${op.id})\">🗑️</button></td>
-      </tr>\`;
+    html += `<tr>
+      <td>${d[2]}/${d[1]}</td>
+      <td>${CAT_LABELS[op.category] || op.category} <span class="${badge}">${op.comment}</span></td>
+      <td>${op.type === 'depense' ? '-' : '+'}${op.amount.toFixed(2)} €</td>
+      <td><button onclick="supprimerOp(${op.id})">&#x1F5D1;</button></td>
+    </tr>`;
   });
-
-  container.innerHTML = html + '</tbody></table>';
+  html += '</tbody></table>';
+  container.innerHTML = html;
 }
 
-window.supprimerOp = function (id) {
+window.supprimerOp = function(id) {
   if (confirm('Supprimer cette opération ?')) {
     const ops = loadOperations().filter(o => o.id !== id);
     saveOperations(ops);
@@ -340,28 +296,21 @@ function initGraphiques() {
 
   const depenses = ops.filter(o => o.type === 'depense');
   const catData = {};
-
   depenses.forEach(d => {
     catData[d.category] = (catData[d.category] || 0) + d.amount;
   });
 
   if (chartCategories) chartCategories.destroy();
-
   chartCategories = new Chart(canvasCat, {
     type: 'doughnut',
     data: {
-      labels: Object.keys(catData).map(c => CAT_LABELS[c]),
-      datasets: [{
-        data: Object.values(catData),
-        backgroundColor: Object.keys(catData).map(c => CAT_COLORS[c])
-      }]
+      labels: Object.keys(catData).map(c => CAT_LABELS[c] || c),
+      datasets: [{ data: Object.values(catData), backgroundColor: Object.keys(catData).map(c => CAT_COLORS[c] || '#9e9e9e') }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        title: { display: true, text: 'Dépenses par catégorie' }
-      }
+      plugins: { title: { display: true, text: 'Dépenses par catégorie' } }
     }
   });
 
@@ -374,9 +323,7 @@ function initGraphiques() {
   });
 
   const labels = Object.keys(mensuel).sort();
-
   if (chartMensuel) chartMensuel.destroy();
-
   chartMensuel = new Chart(canvasMen, {
     type: 'bar',
     data: {
@@ -386,14 +333,13 @@ function initGraphiques() {
         { label: 'Dépenses', data: labels.map(l => mensuel[l].dep), backgroundColor: '#f44336' }
       ]
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false
-    }
+    options: { responsive: true, maintainAspectRatio: false }
   });
 }
 
-// Initialisation
+// ========================
+// INITIALISATION
+// ========================
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./service-worker.js');
 }
