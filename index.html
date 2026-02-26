@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon Budget</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2196F3">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Mon Budget">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; color: #333; }
+
+    header { background: #2196F3; color: white; padding: 16px; text-align: center; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    header h1 { font-size: 1.2rem; font-weight: 600; }
+
+    .solde-card { background: white; margin: 16px; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .solde-card .label { font-size: 0.85rem; color: #888; margin-bottom: 4px; }
+    .solde-card .montant { font-size: 2.2rem; font-weight: 700; }
+    .solde-card .montant.positif { color: #4CAF50; }
+    .solde-card .montant.negatif { color: #f44336; }
+    .solde-resume { display: flex; justify-content: space-around; margin-top: 14px; padding-top: 14px; border-top: 1px solid #eee; }
+    .solde-resume div { text-align: center; }
+    .solde-resume .label { font-size: 0.75rem; color: #888; }
+    .solde-resume .val { font-size: 1.1rem; font-weight: 600; }
+    .solde-resume .val.rev { color: #4CAF50; }
+    .solde-resume .val.dep { color: #f44336; }
+
+    .section-title { font-size: 0.85rem; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; padding: 0 16px 8px; }
+
+    .form-card { background: white; margin: 0 16px 16px; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .type-toggle { display: flex; background: #f0f4f8; border-radius: 10px; padding: 4px; margin-bottom: 14px; }
+    .type-toggle button { flex: 1; border: none; background: transparent; padding: 8px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+    .type-toggle button.active-dep { background: #f44336; color: white; }
+    .type-toggle button.active-rev { background: #4CAF50; color: white; }
+    .form-row { margin-bottom: 12px; }
+    .form-row label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 4px; }
+    .form-row input, .form-row select { width: 100%; padding: 10px 12px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 1rem; background: #fafafa; transition: border 0.2s; }
+    .form-row input:focus, .form-row select:focus { outline: none; border-color: #2196F3; background: white; }
+    .btn-add { width: 100%; padding: 13px; background: #2196F3; color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .btn-add:active { background: #1976D2; }
+
+    .liste-section { margin: 0 16px 80px; }
+    .transaction-item { background: white; border-radius: 12px; padding: 13px 16px; margin-bottom: 10px; display: flex; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+    .transaction-icone { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-right: 12px; flex-shrink: 0; }
+    .transaction-info { flex: 1; }
+    .transaction-info .desc { font-weight: 600; font-size: 0.95rem; }
+    .transaction-info .cat-date { font-size: 0.75rem; color: #aaa; margin-top: 2px; }
+    .transaction-montant { font-weight: 700; font-size: 1.05rem; }
+    .transaction-montant.dep { color: #f44336; }
+    .transaction-montant.rev { color: #4CAF50; }
+    .btn-suppr { background: none; border: none; color: #ccc; font-size: 1.2rem; cursor: pointer; padding: 4px 6px; margin-left: 8px; }
+    .btn-suppr:active { color: #f44336; }
+    .vide { text-align: center; color: #bbb; padding: 30px 0; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>💰 Mon Budget</h1>
+  </header>
+
+  <div class="solde-card">
+    <div class="label">Solde actuel</div>
+    <div class="montant" id="solde">0,00 €</div>
+    <div class="solde-resume">
+      <div><div class="label">Revenus</div><div class="val rev" id="total-rev">0,00 €</div></div>
+      <div><div class="label">Dépenses</div><div class="val dep" id="total-dep">0,00 €</div></div>
+    </div>
+  </div>
+
+  <div style="padding: 0 0 8px;">
+    <p class="section-title">Nouvelle transaction</p>
+  </div>
+  <div class="form-card">
+    <div class="type-toggle">
+      <button id="btn-dep" class="active-dep" onclick="setType('depense')">➖ Dépense</button>
+      <button id="btn-rev" onclick="setType('revenu')">➕ Revenu</button>
+    </div>
+    <div class="form-row">
+      <label>Montant (€)</label>
+      <input type="number" id="montant" placeholder="0.00" min="0" step="0.01">
+    </div>
+    <div class="form-row">
+      <label>Description</label>
+      <input type="text" id="description" placeholder="Ex: Courses, Loyer...">
+    </div>
+    <div class="form-row">
+      <label>Catégorie</label>
+      <select id="categorie">
+        <option value="Alimentation">🛒 Alimentation</option>
+        <option value="Transport">🚗 Transport</option>
+        <option value="Logement">🏠 Logement</option>
+        <option value="Loisirs">🎮 Loisirs</option>
+        <option value="Sante">💊 Santé</option>
+        <option value="Vetements">👗 Vêtements</option>
+        <option value="Salaire">💼 Salaire</option>
+        <option value="Autre">📦 Autre</option>
+      </select>
+    </div>
+    <button class="btn-add" onclick="ajouterTransaction()">Ajouter</button>
+  </div>
+
+  <div class="liste-section">
+    <p class="section-title">Historique</p>
+    <div id="liste-transactions"></div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
