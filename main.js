@@ -17,6 +17,12 @@ const COULEURS = {
 let typeActuel = 'depense';
 let transactions = JSON.parse(localStorage.getItem('budget_transactions') || '[]');
 
+// Initialiser le champ date avec la date d'aujourd'hui
+window.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('date-transaction').value = today;
+});
+
 function setType(type) {
   typeActuel = type;
   const btnDep = document.getElementById('btn-dep');
@@ -34,6 +40,7 @@ function ajouterTransaction() {
   const montant = parseFloat(document.getElementById('montant').value);
   const description = document.getElementById('description').value.trim();
   const categorie = document.getElementById('categorie').value;
+  const dateValeur = document.getElementById('date-transaction').value;
 
   if (!montant || montant <= 0) {
     alert('Veuillez entrer un montant valide.');
@@ -43,6 +50,14 @@ function ajouterTransaction() {
     alert('Veuillez entrer une description.');
     return;
   }
+  if (!dateValeur) {
+    alert('Veuillez choisir une date.');
+    return;
+  }
+
+  // Convertir la date YYYY-MM-DD en format francais DD/MM/YYYY
+  const [annee, mois, jour] = dateValeur.split('-');
+  const dateAffichee = `${jour}/${mois}/${annee}`;
 
   const transaction = {
     id: Date.now(),
@@ -50,16 +65,25 @@ function ajouterTransaction() {
     montant: montant,
     description: description,
     categorie: categorie,
-    date: new Date().toLocaleDateString('fr-FR')
+    date: dateAffichee,
+    dateISO: dateValeur
   };
 
   transactions.unshift(transaction);
+  // Trier par date decroissante
+  transactions.sort((a, b) => {
+    const da = a.dateISO || '0000-00-00';
+    const db = b.dateISO || '0000-00-00';
+    return db.localeCompare(da);
+  });
   sauvegarder();
   afficher();
 
   // Reinitialiser le formulaire
   document.getElementById('montant').value = '';
   document.getElementById('description').value = '';
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('date-transaction').value = today;
 }
 
 function supprimerTransaction(id) {
